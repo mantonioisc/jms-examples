@@ -55,6 +55,9 @@ public class LoteriaAnnouncer implements LoteriaParticipant{
 		
 		while(next){
 			playCard();
+			synchronized (loteriaGame) {
+				next = !loteriaGame.isFinished();
+			}
 		}
 		logger.debug("Very unlikely, all the cards are gone and no one won");
 	}
@@ -65,16 +68,18 @@ public class LoteriaAnnouncer implements LoteriaParticipant{
 	 * This is going to be called by another thread (the listener thread)
 	 */
 	public void stopGame(String winnerName){
-		logger.debug("Loteria! the winner is " + winnerName);
-		logger.debug("The cards played are: ");
-		
 		synchronized (loteriaGame) {
+			logger.debug("Loteria! the winner is " + winnerName);
+			logger.debug("The cards played are: ");
 			logger.debug( Arrays.toString(loteriaGame.getCardAppareanceOrder()) );	
+			while(loteriaGame.getNextCard()!=null){
+				logger.debug("removing remaining cards from deck, to avoid deadlock in sendAllCards()");
+			}
 		}
 		
-		logger.debug("Stop listenning to topics");
 		publisher.closeConnection();
 		subscriber.exitGame();
+		logger.debug("Stop listenning to topics");
 	}
 
 	public String getPlayerName() {

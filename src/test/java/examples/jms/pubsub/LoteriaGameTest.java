@@ -1,6 +1,5 @@
 package examples.jms.pubsub;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,11 +22,6 @@ public class LoteriaGameTest {
 	@Test
 	public void playGame(){
 		announcer.sendAllCards();
-	}
-	
-	@After
-	public void tearDown(){
-		
 	}
 	
 }

@@ -1,5 +1,6 @@
 package examples.jms.publisher;
 
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -64,7 +65,9 @@ public class PlayCardPublisher {
 			TopicPublisher publisher = session.createPublisher(topic);
 			publisher.publish(message);
 			logger.debug("Message sent");
-			publisher.close();
+			publisher.close();	
+		} catch(IllegalStateException e){
+			logger.warn("The session is already closed and we are trying to send other card", e);	
 		} catch (JMSException e) {
 			logger.error(e.getMessage(), e);
 			throw new RuntimeException(e);
