@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+	
+	<!-- JmsTemplate Configuration -->
+	<bean id="clientJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="clientQueueConnectionFactory" />
+		<property name="destinationResolver" ref="clientDestinationResolver"/>
+		<property name="timeToLive" value="30000"/>
+		<property name="receiveTimeout" value="10000"/>
+		<property name="pubSubDomain" value="false"/>
+		<!-- Needed to trick the template to lookup for a dynamic Queue from ActiveMQ -->
+		<property name="defaultDestination">
+			<bean class="org.springframework.jndi.JndiObjectFactoryBean">
+				<property name="jndiTemplate" ref="jndiTemplate"/>
+				<property name="jndiName" value="dynamicQueues/GameCoverQueue"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="replyToQueue" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiTemplate" ref="jndiTemplate"/>
+		<property name="jndiName" value="dynamicQueues/GameCoverReplyQueue"/>
+	</bean>
+	
+	<!-- JMS container configuration -->
+	<bean id="serverJmsContainer" 
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="serverQueueConnectionFactory"/>
+		<property name="messageSelector">
+			<value><![CDATA[console <> '360']]></value>
+		</property>
+		<property name="destinationResolver" ref="serverDestinationResolver"/>
+		<property name="concurrentConsumers" value="3"/>
+		<property name="destinationName" value="dynamicQueues/GameCoverQueue"/>
+		<property name="messageListener" ref="gameCoverServiceServer"/>
+	</bean>
+	
+	<!-- JNDI configuration -->
+	<!-- Defines the same as the jndi.properties, reused in server and client -->
+	<bean id="jndiTemplate" class="org.springframework.jndi.JndiTemplate">
+		<property name="environment">
+			<props>
+				<prop key="java.naming.factory.initial">org.apache.activemq.jndi.ActiveMQInitialContextFactory</prop>
+				<prop key="java.naming.provider.url">tcp://localhost:61616</prop>
+				<prop key="java.naming.security.principal">system</prop>
+				<prop key="java.naming.security.credentials">manager</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="serverQueueConnectionFactory" 
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<!-- spring specific -->
+		<property name="targetConnectionFactory">
+			<bean class="org.springframework.jndi.JndiObjectFactoryBean">
+				<property name="jndiTemplate" ref="jndiTemplate"/>
+				<property name="jndiName" value="QueueCF"/>
+			</bean>
+		</property>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+	
+	<bean id="serverDestinationResolver" 
+		class="org.springframework.jms.support.destination.JndiDestinationResolver">
+		<property name="jndiTemplate" ref="jndiTemplate"/>
+		<property name="cache" value="true"/>
+		<property name="fallbackToDynamicDestination" value="true"/>
+	</bean>
+	
+	<bean id="clientQueueConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory">
+			<bean class="org.springframework.jndi.JndiObjectFactoryBean">
+				<property name="jndiTemplate" ref="jndiTemplate"/>
+				<property name="jndiName" value="QueueCF"/>
+			</bean>
+		</property>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+	
+	<bean id="clientDestinationResolver"
+		class="org.springframework.jms.support.destination.JndiDestinationResolver">
+		<property name="jndiTemplate" ref="jndiTemplate"/>
+		<property name="cache" value="true"/>
+		<property name="fallbackToDynamicDestination" value="true"/>
+	</bean>
+
+	<!-- My beans configuration -->
+	<bean id="gameCoverServiceClient" class="examples.jms.spring.GameCoverServiceImpl">
+		<property name="jmsTemplate" ref="clientJmsTemplate"/>
+		<property name="replyToQueue" ref="replyToQueue"/>
+		<property name="gameConsoleMap">
+			<map>
+				<entry key="BLUS30109" value="PS3"/>
+				<entry key="BCUS98111" value="PS3"/>
+				<entry key="SLUS21115" value="PS2"/>
+				<entry key="9UE00102" value="360"/>
+			</map>
+		</property>
+	</bean>	
+	
+	<bean id="gameCoverServiceServer" class="examples.jms.spring.GameCoverServiceServerImpl">
+		<property name="path" value="images"/>
+		<property name="gameMap">
+			<map>
+				<entry key="BLUS30109" value="252px-Mgs4us_cover_small.jpg"/>
+				<entry key="BCUS98111" value="256px-God_of_War_III_not_final_art.jpg"/>
+				<entry key="SLUS21115" value="250px-OkamiNTSCcoverFinal.jpg"/>
+			</map>
+		</property>
+	</bean>
+</beans>
