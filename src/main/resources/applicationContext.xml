@@ -105,9 +105,9 @@
 		<property name="path" value="images"/>
 		<property name="gameMap">
 			<map>
-				<entry key="BLUS30109" value="252px-Mgs4us_cover_small.jpg"/>
-				<entry key="BCUS98111" value="256px-God_of_War_III_not_final_art.jpg"/>
-				<entry key="SLUS21115" value="250px-OkamiNTSCcoverFinal.jpg"/>
+				<entry key="BLUS30109" value="Tux.png"/>
+				<entry key="BCUS98111" value="Tux.png"/>
+				<entry key="SLUS21115" value="Tux.png"/>
 			</map>
 		</property>
 	</bean>

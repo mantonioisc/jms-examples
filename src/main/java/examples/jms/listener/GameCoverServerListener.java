@@ -138,9 +138,9 @@ public class GameCoverServerListener implements MessageListener, GameCoverServic
 	 * I want to focus in JMS use, not the implementation of the service
 	 */
 	private Map<String, String> gameMap = new HashMap<String, String>(){{
-		put("BLUS30109", "252px-Mgs4us_cover_small.jpg");
-		put("BCUS98111", "256px-God_of_War_III_not_final_art.jpg");
-		put("SLUS21115", "250px-OkamiNTSCcoverFinal.jpg");
+		put("BLUS30109", "Tux.png");
+		put("BCUS98111", "Tux.png");
+		put("SLUS21115", "Tux.png");
 	}};
 	
 }
